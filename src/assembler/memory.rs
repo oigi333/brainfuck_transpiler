@@ -1,5 +1,3 @@
-
-
 // TODO
 // 1. Add freeing variables to destructor if possible
 
@@ -34,13 +32,14 @@ impl Memory {
             Data::Variable(pointer) => {
                 let mut index: Option<usize> = Option::None;
                 for i in (0..self.pointers.len()).rev() {
-                    if self.pointers[i] < pointer {
+                    if self.pointers[i] > pointer {
                         index = Some(i);
                         break;
                     }
                 }
+
                 match index {
-                    Some(index) => self.pointers.insert(index, pointer),
+                    Some(index) => self.pointers.insert(index + 1, pointer),
                     None => ()
                 }
             },

@@ -18,6 +18,7 @@ fn main() {
         Mnemonic::Add(&Data::Constant(7), &a),
         Mnemonic::Add(&Data::Constant(7), &b),
         Mnemonic::Multiple(&b, &a),
+        Mnemonic::Multiple(&Data::Constant(7), &b),
         Mnemonic::Write(&a)
 
     ], &mut state);
@@ -27,6 +28,8 @@ fn main() {
     interpret::interpret(
         format!("{}", state.get_brainfuck_code()),
         1024);
+    state.memory.free(b);
+    state.memory.free(a);
 
-
+    println!("{:?}", state.memory);
 }
