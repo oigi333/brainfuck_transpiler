@@ -4,5 +4,8 @@ version = "0.1.0"
 authors = ["oigi333 <ignacy.kucharski@autonomik.pl>"]
 edition = "2018"
 
+[profile.debug]
+panic = "unwind"
+
 [dependencies]
 

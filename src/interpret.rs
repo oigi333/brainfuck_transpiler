@@ -58,7 +58,7 @@ fn lex(source: String) -> Vec<OpCode> {
     operations
 }
 
-fn parse(opcodes: Vec<OpCode>) -> Vec<Instruction> {
+fn parse(opcodes: Vec<OpCode>) -> Vec<Instruction>  {
     let mut program: Vec<Instruction> = Vec::new();
     let mut loop_stack = 0;
     let mut loop_start = 0;
@@ -133,7 +133,7 @@ fn run(instructions: &Vec<Instruction>, tape: &mut Vec<u8>, data_pointer: &mut u
     }
 }
 
-pub fn interpret(code: String, tape_length: usize) {
+pub fn interpret(code: String, tape_length: usize)  {
     let mut tape: Vec<u8> = vec![0; tape_length];
     let mut data_pointer = 0;
 

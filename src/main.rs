@@ -2,7 +2,8 @@
 mod interpret;
 mod assembler;
 
-use assembler::{assembler, Mnemonic, Data};
+use assembler::{assembler, Statement, Data};
+use crate::assembler::State;
 
 
 fn main() {
@@ -12,14 +13,24 @@ fn main() {
     state.add('.');*/
     let mut state = assembler::State::new();
 
-    let a = state.memory.alloc();
-    let b = state.memory.alloc();
-    assembler(vec![
-        Mnemonic::Add(&Data::Constant(7), &a),
-        Mnemonic::Add(&Data::Constant(7), &b),
-        Mnemonic::Multiple(&b, &a),
-        Mnemonic::Multiple(&Data::Constant(7), &b),
-        Mnemonic::Write(&a)
+    let penultimate = state.memory.alloc();
+    let last = state.memory.alloc();
+    let current = state.memory.alloc();
+    let i = state.memory.alloc();
+    assembler(&vec![
+        Statement::Add(&Data::Constant(0), &last),
+        Statement::Add(&Data::Constant(1), &current),
+        Statement::Read(&i),
+        Statement::Subtract(&Data::Constant(48), &i),
+        Statement::While(&i, &vec![
+            Statement::Copy(&last, &penultimate),
+            Statement::Copy(&current, &last),
+            Statement::Copy(&last, &current),
+            Statement::Add(&penultimate, &current),
+            Statement::Decrement(&i)
+        ]),
+        Statement::Add(&Data::Constant(48), &current),
+        Statement::Write(&current)
 
     ], &mut state);
 
@@ -28,8 +39,9 @@ fn main() {
     interpret::interpret(
         format!("{}", state.get_brainfuck_code()),
         1024);
-    state.memory.free(b);
-    state.memory.free(a);
+    state.memory.free(last);
+    state.memory.free(current);
+    state.memory.free(i);
 
     println!("{:?}", state.memory);
 }

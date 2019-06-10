@@ -23,32 +23,14 @@ impl State {
         self.code.iter().collect()
     }
 
-    pub fn add(&mut self, op: char) {
+    pub fn emit(&mut self, op: char) {
         self.code.push(op);
     }
 
-    pub fn append(&mut self, op: char, times: usize) {
+    pub fn emit_multiple(&mut self, op: char, times: usize) {
         let mut ops = vec![op; times];
         self.code.append(&mut ops);
     }
 
-    pub fn shift_pointer_left(&mut self, by: usize) {
-        self.append('<', by );
-        self.current_pointer -= by;
-    }
 
-    pub fn shift_pointer_right(&mut self, by: usize) {
-        self.append('>', by );
-        self.current_pointer += by;
-    }
-
-    pub fn set_pointer_to(&mut self, pointer: usize) {
-        let difference = (pointer as i64) - (self.current_pointer as i64);
-        if difference > 0 {
-            self.shift_pointer_right(difference as usize);
-        }
-        else if difference < 0 {
-            self.shift_pointer_left((-difference) as usize)
-        }
-    }
 }
