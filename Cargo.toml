@@ -1,0 +1,8 @@
+[package]
+name = "brainfuck_transpiler"
+version = "0.1.0"
+authors = ["oigi333 <ignacy.kucharski@autonomik.pl>"]
+edition = "2018"
+
+[dependencies]
+
