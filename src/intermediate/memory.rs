@@ -1,11 +1,13 @@
+use super::State;
 // TODO
 // 1. Add freeing variables to destructor if possible
 
 #[derive(Debug)]
 pub enum Data {
     Variable(usize),
-    Constant(u8)
+    Constant(u64)
 }
+
 
 #[derive(Debug)]
 pub struct Memory {

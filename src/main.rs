@@ -1,23 +1,21 @@
 
 mod interpret;
-mod assembler;
+mod intermediate;
 
-use assembler::{assembler, Statement, Data};
-use crate::assembler::State;
+use intermediate::{intermediate_transpiler, State, Statement, Data};
 
 
 fn main() {
-
     /*let mut state = State::new();
     state.append('+', 49);
     state.add('.');*/
-    let mut state = assembler::State::new();
+    let mut state = intermediate::State::new();
 
     let penultimate = state.memory.alloc();
     let last = state.memory.alloc();
     let current = state.memory.alloc();
     let i = state.memory.alloc();
-    assembler(&vec![
+    intermediate_transpiler(&vec![
         Statement::Add(&Data::Constant(0), &last),
         Statement::Add(&Data::Constant(1), &current),
         Statement::Read(&i),

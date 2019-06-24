@@ -1,7 +1,5 @@
 use super::memory::{Memory};
-
-// TODO
-// Move pointer code generators to generator module
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct State {
@@ -11,10 +9,12 @@ pub struct State {
 }
 
 impl State {
-    pub fn new() -> State {
+    pub fn new() -> Self {
+        let mut memory = Memory::new();
+
         State {
             code: Vec::new(),
-            memory: Memory::new(),
+            memory,
             current_pointer: 0
         }
     }

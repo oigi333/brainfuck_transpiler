@@ -1,14 +1,11 @@
-mod state;
-pub use state::State;
-mod memory;
-pub use memory::{ Data };
-mod generators;
-pub use generators::*;
+pub mod state;
+pub use state::{State};
+pub mod memory;
+pub use memory::Data;
+pub mod generators;
+use generators::*;
 
-// TODO
-// 1. Rename assembler to sth like intermediate_language_transpiler at first it was transpiling brainfuck assembly to brainfuck
-// 2. Rename Mnemonic to sth else like OpCode, I've named it this way because initially it was supposed to contain only mnemonicish entries
-// 3. Add branches for new op codes compiler
+use regex::Regex;
 
 #[derive(Debug)]
 pub enum Statement<'a> {
@@ -24,10 +21,12 @@ pub enum Statement<'a> {
     Move(&'a Data, &'a Data),
     Write(&'a Data),
     Read(&'a Data),
-    While(&'a Data, &'a Vec<Statement<'a>>)
+    While(&'a Data, &'a Vec<Statement<'a>>),
+    If(&'a Data, &'a Vec<Statement<'a>>),
+    IfMove(&'a Data, &'a Vec<Statement<'a>>),
 }
 
-pub fn assembler(statements: &Vec<Statement>, state: &mut State) {
+pub fn intermediate_transpiler(statements: &Vec<Statement>, state: &mut State) {
     for statement in statements {
         match statement {
             Statement::Zero(var) => arithmetic::zero(state, var),
@@ -43,8 +42,13 @@ pub fn assembler(statements: &Vec<Statement>, state: &mut State) {
             Statement::Write(var) => data::write(state, var),
             Statement::Read(var) => data::read(state, var),
             Statement::While(condition, loop_interior) =>
-                control_flow::while_not_zero(state, condition, |state| assembler(loop_interior, state))
+                control_flow::while_not_zero(state, condition, |state| intermediate_transpiler(loop_interior, state)),
+            Statement::If(condition, loop_interior) =>
+                control_flow::if_not_zero(state, condition, |state| intermediate_transpiler(loop_interior, state)),
+            Statement::IfMove(condition, loop_interior) =>
+                control_flow::if_not_zero_move(state, condition, |state| intermediate_transpiler(loop_interior, state))
             //_ => ()
         }
     }
 }
+

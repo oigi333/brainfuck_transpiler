@@ -9,10 +9,8 @@ use std::io::Read;
 #[derive(Debug)]
 #[derive(Clone)]
 enum OpCode {
-    IncrementPointer,
-    DecrementPointer,
-    Increment,
-    Decrement,
+    MovePointer(i128),
+    AddValue(i128),
     Write,
     Read,
     LoopBegin,
@@ -22,10 +20,8 @@ enum OpCode {
 #[derive(Debug)]
 #[derive(Clone)]
 enum Instruction {
-    IncrementPointer,
-    DecrementPointer,
-    Increment,
-    Decrement,
+    MovePointer(i128),
+    AddValue(i128),
     Write,
     Read,
     Loop(Vec<Instruction>)
@@ -33,14 +29,42 @@ enum Instruction {
 
 /// Lexer turns the source code into a sequence of opcodes
 fn lex(source: String) -> Vec<OpCode> {
-    let mut operations = Vec::new();
+    let mut operations: Vec<OpCode> = Vec::new();
 
     for symbol in source.chars() {
         let op = match symbol {
-            '>' => Some(OpCode::IncrementPointer),
-            '<' => Some(OpCode::DecrementPointer),
-            '+' => Some(OpCode::Increment),
-            '-' => Some(OpCode::Decrement),
+            '>' => {
+                if let Some(OpCode::MovePointer(last)) = operations.last_mut() {
+                    *last += 1;
+                    None
+                } else {
+                    Some(OpCode::MovePointer(1))
+                }
+            },
+            '<' => {
+                if let Some(OpCode::MovePointer(last)) = operations.last_mut() {
+                    *last -= 1;
+                    None
+                } else {
+                    Some(OpCode::MovePointer(-1))
+                }
+            },
+            '+' => {
+                if let Some(OpCode::AddValue(last)) = operations.last_mut() {
+                    *last += 1;
+                    None
+                } else {
+                    Some(OpCode::AddValue(1))
+                }
+            },
+            '-' => {
+                if let Some(OpCode::AddValue(last)) = operations.last_mut() {
+                    *last -= 1;
+                    None
+                } else {
+                    Some(OpCode::AddValue(-1))
+                }
+            },
             '.' => Some(OpCode::Write),
             ',' => Some(OpCode::Read),
             '[' => Some(OpCode::LoopBegin),
@@ -66,10 +90,8 @@ fn parse(opcodes: Vec<OpCode>) -> Vec<Instruction>  {
     for (i, op) in opcodes.iter().enumerate() {
         if loop_stack == 0 {
             let instr = match op {
-                OpCode::IncrementPointer => Some(Instruction::IncrementPointer),
-                OpCode::DecrementPointer => Some(Instruction::DecrementPointer),
-                OpCode::Increment => Some(Instruction::Increment),
-                OpCode::Decrement => Some(Instruction::Decrement),
+                OpCode::AddValue(value) => Some(Instruction::AddValue(*value)),
+                OpCode::MovePointer(value) => Some(Instruction::MovePointer(*value)),
                 OpCode::Write => Some(Instruction::Write),
                 OpCode::Read => Some(Instruction::Read),
 
@@ -111,18 +133,16 @@ fn parse(opcodes: Vec<OpCode>) -> Vec<Instruction>  {
 }
 
 /// Executes a program that was previously parsed
-fn run(instructions: &Vec<Instruction>, tape: &mut Vec<u8>, data_pointer: &mut usize) {
+fn run(instructions: &Vec<Instruction>, tape: &mut Vec<u64>, data_pointer: &mut usize) {
     for instr in instructions {
         match instr {
-            Instruction::IncrementPointer => *data_pointer += 1,
-            Instruction::DecrementPointer => *data_pointer -= 1,
-            Instruction::Increment => tape[*data_pointer] += 1,
-            Instruction::Decrement => tape[*data_pointer] -= 1,
-            Instruction::Write => {print!("{}", tape[*data_pointer] as char)},
+            Instruction::AddValue(value) => if *value > 0 { tape[*data_pointer] += *value as u64 } else {tape[*data_pointer] -= (-*value) as u64},
+            Instruction::MovePointer(by) => if *by > 0 { *data_pointer += *by as usize } else {*data_pointer -= (-*by) as usize},
+            Instruction::Write => {print!("{}", tape[*data_pointer] as u8 as char)},
             Instruction::Read => {
                 let mut input: [u8; 1] = [0; 1];
                 std::io::stdin().read_exact(&mut input).expect("failed to read stdin");
-                tape[*data_pointer] = input[0];
+                tape[*data_pointer] = input[0] as u64;
             },
             Instruction::Loop(nested_instructions) => {
                 while tape[*data_pointer] != 0 {
@@ -134,8 +154,9 @@ fn run(instructions: &Vec<Instruction>, tape: &mut Vec<u8>, data_pointer: &mut u
 }
 
 pub fn interpret(code: String, tape_length: usize)  {
-    let mut tape: Vec<u8> = vec![0; tape_length];
+    let mut tape: Vec<u64> = vec![0; tape_length];
     let mut data_pointer = 0;
+    //println!("{:?}", parse(lex(code)));
 
     run(&parse(lex(code)), &mut tape, &mut data_pointer);
     println!("{:?}", tape);

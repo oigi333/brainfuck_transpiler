@@ -1,5 +1,6 @@
 use super::{ State, Data, pointer, control_flow };
 
+
 pub fn zero(state: &mut State, var: &Data) {
     match var {
         Data::Variable(_) => {
